@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Object Detection App</title>
+    <style>
+        body {
+            text-align: center;
+            margin-top: 50px;
+            font-family: Arial, sans-serif;
+        }
+        img {
+            max-width: 80vw;
+            max-height: 70vh;
+            margin-top: 20px;
+            margin-left: auto;
+            margin-right: auto;
+            display: block;
+        }
+        #loading {
+            display: none;
+            margin-top: 20px;
+        }
+        ul {
+            list-style-type: none;
+            padding: auto;
+        }
+        li {
+            margin-bottom: 5px;
+            border: 1px solid #ddd;
+            padding: 10px;
+            border-radius: 5px;
+            background-color: #f7f7f7;
+        }
+    </style>
+</head>
+<body>
+    <h1>Object Detection App</h1>
+    <form action="/" method="post" enctype="multipart/form-data">
+        <input type="file" id="upload-button" name="image" accept="image/*" required>
+        <button id="detect-button" type="submit">Detect Objects</button>
+    </form>
+    <div id="loading">
+        <p>Detecting objects...</p>
+    </div>
+    {% if detection_result %}
+        <h2>Detection Result:</h2>
+        {% if labels|length > 0 %}
+            <h3>Found:</h3>
+            <ul>
+                {% for key, value in labels.items() %}
+                    <li>{{ key }}: {{ value }}</li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p>No suspicious objects found.</p>
+        {% endif %}
+        <img src="{{ detection_result }}" alt="Detection Result">
+    {% endif %}
+    
+    <script>
+        const form = document.querySelector("form");
+        const loadingDiv = document.getElementById("loading");
+
+        form.addEventListener("submit", () => {
+            document.querySelectorAll("button").forEach((button) => {
+                button.disabled = true;
+            });
+            loadingDiv.style.display = "block";
+        });
+    </script>
+</body>
+</html>
