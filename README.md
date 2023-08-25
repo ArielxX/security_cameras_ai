@@ -7,7 +7,7 @@ This is a simple web application for object detection using YOLOv7. It allows us
 1. **Clone the Repository:**
 
     ```bash
-    git clone https://github.com/yourusername/object-detection-app.git
+    git clone https://github.com/ArielxX/security_cameras_ai.git
     cd object-detection-app
     ```
 
@@ -47,7 +47,7 @@ This is a simple web application for object detection using YOLOv7. It allows us
 ## Requirements
 
 - Python 3.6+
-- Flask 2.0.0
+- Flask
 - Other dependencies listed in `requirements.txt`
 
 ## Credits
