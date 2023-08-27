@@ -1,72 +1,63 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Object Detection App</title>
+    <title>Object Detection Home</title>
     <style>
         body {
             text-align: center;
-            margin-top: 50px;
+            margin-top: 100px;
             font-family: Arial, sans-serif;
         }
-        img {
-            max-width: 80vw;
-            max-height: 70vh;
-            margin-top: 20px;
-            margin-left: auto;
-            margin-right: auto;
-            display: block;
+        h1 {
+            font-size: 24px;
+            margin-bottom: 20px;
         }
-        #loading {
-            display: none;
-            margin-top: 20px;
+        .intro {
+            margin-bottom: 30px;
         }
-        ul {
-            list-style-type: none;
-            padding: auto;
+        .options {
+            display: flex;
+            flex-direction: column; /* Cambio para alinear verticalmente */
+            align-items: center;
+            gap: 20px;
         }
-        li {
-            margin-bottom: 5px;
+        .option-box {
+            padding: 15px;
             border: 1px solid #ddd;
-            padding: 10px;
             border-radius: 5px;
             background-color: #f7f7f7;
+            text-align: center;
+            transition: background-color 0.3s;
+        }
+        .option-box:hover {
+            background-color: #e0e0e0;
+        }
+        a {
+            text-decoration: none;
+            color: #333;
+        }
+        .btn {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: #fff;
+            text-decoration: none;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+        .btn:hover {
+            background-color: #0056b3;
         }
     </style>
 </head>
 <body>
-    <h1>Object Detection App</h1>
-    <form action="/" method="post" enctype="multipart/form-data">
-        <input type="file" id="upload-button" name="image" accept="image/*" required>
-        <button id="detect-button" type="submit">Detect Objects</button>
-    </form>
-    <div id="loading">
-        <p>Detecting objects...</p>
+    <h1>Welcome to Object Detection Home</h1>
+    <div class="intro">
+        <p>Let's improve camera security systems together:</p>
     </div>
-    {% if detection_result %}
-        <h2>Detection Result:</h2>
-        {% if labels|length > 0 %}
-            <h3>Found:</h3>
-            <ul>
-                {% for key, value in labels.items() %}
-                    <li>{{ key }}: {{ value }}</li>
-                {% endfor %}
-            </ul>
-        {% else %}
-            <p>No suspicious objects found.</p>
-        {% endif %}
-        <img src="{{ detection_result }}" alt="Detection Result">
-    {% endif %}
-    
-    <script>
-        const form = document.querySelector("form");
-        const loadingDiv = document.getElementById("loading");
-
-        form.addEventListener("submit", () => {
-            document.querySelectorAll("button").forEach((button) => {
-                button.disabled = true;
-            });
-            loadingDiv.style.display = "block";
-        });
-    </script>
+    <div class="options">
+        <a class="btn" href="{{ url_for('object_detection') }}">Object Detection</a>
+        <a class="btn" href="{{ url_for('face_recognition') }}">Face Recognition</a>
+    </div>
 </body>
 </html>
