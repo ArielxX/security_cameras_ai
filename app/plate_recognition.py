@@ -3,8 +3,6 @@ import numpy as np
 import imutils
 import easyocr
 import pytesseract
-import cv2
-import numpy as np
 
 chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'
 
