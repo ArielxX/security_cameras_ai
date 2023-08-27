@@ -1,5 +1,6 @@
 from flask import Flask, render_template, request, redirect, url_for
 import subprocess
+from face_detect import predict
 
 app = Flask(__name__)
 
@@ -18,8 +19,19 @@ def run_detection(weights_path, image_path):
     command = f"python ../yolov7/detect.py --weights {weights_path} --source {image_path} --class 0 2 3 5 7 --project static --name detected_images --exist-ok --conf-thres 0.5 --iou-thres 0.6 --save-txt"
     subprocess.run(command, shell=True)
 
-@app.route('/', methods=['GET', 'POST'])
+def run_face_recognition(photo_data):
+    print("Running face recognition")
+    result = predict(photo_data)
+    print("Face recognition result:", result)
+    return result
+
+
+@app.route('/', methods=['GET'])
 def index():
+    return render_template('index.html')
+
+@app.route('/object_detection', methods=['GET', 'POST'])
+def object_detection():
     if request.method == 'POST':
         if 'image' not in request.files:
             return redirect(request.url)
@@ -67,9 +79,25 @@ def index():
             # remove the labels file
             subprocess.run(f"rm {labels_path}", shell=True)
 
-            return render_template('index.html', detection_result=detection_result_path, labels=labels)
+            return render_template('object_detection.html', detection_result=detection_result_path, labels=labels)
 
-    return render_template('index.html', detection_result=None)
+    return render_template('object_detection.html', detection_result=None)
+
+@app.route('/face_recognition', methods=['GET'])
+def face_recognition():
+    return render_template('face_recognition.html')
+    
+@app.route('/validate_face', methods=['POST'])
+def validate_face():
+    try:
+        data = request.get_json()
+        photo_data = data.get('photo', '')
+        is_valid_photo = run_face_recognition(photo_data)
+        print("Is valid photo:", is_valid_photo)
+        return {'is_valid_photo': int(is_valid_photo)}
+    except Exception as e:
+        print('Error:', e)
+        return {'is_valid_photo': False}
 
 if __name__ == '__main__':
     app.run(debug=True)

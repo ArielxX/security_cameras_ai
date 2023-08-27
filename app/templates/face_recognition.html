@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Face Recognition</title>
+    <style>
+        body {
+            text-align: center;
+            margin-top: 100px;
+            font-family: Arial, sans-serif;
+        }
+        h1 {
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+        #video-feed {
+            display: block;
+            margin: 0 auto;
+            max-width: 100%;
+        }
+        #capture-button {
+            margin-top: 20px;
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        #capture-button:hover {
+            background-color: #0056b3;
+        }
+        #captured-photo {
+            display: none;
+            margin-top: 20px;
+            max-width: 100%;
+        }
+        .back-button {
+            text-align: left;
+            margin-left: 20px;
+            margin-top: 10px;
+        }
+        .btn {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: #fff;
+            text-decoration: none;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+        .btn:hover {
+            background-color: #0056b3;
+        }
+        .photo-face {
+            margin-top: 50px;
+            border: 2px solid #007bff;
+            border-radius: 5px;
+        }
+        .photo-face:hover {
+            border: 2px solid #0056b3;
+        }
+        .photo-face-valid {
+            border: 2px solid #28a745;
+        }
+        .photo-face-valid:hover {
+            border: 5px solid #1e7e34;
+        }
+        .photo-face-invalid {
+            border: 2px solid #dc3545;
+        }
+        .photo-face-invalid:hover {
+            border: 5px solid #bd2130;
+        }
+    </style>
+</head>
+<body>
+    <div class="back-button">
+        <a class="btn" href="{{ url_for('index') }}">Home</a>
+    </div>
+    <h1>Face Recognition</h1>
+    <select id="camera-selector"></select>
+    <video id="video-feed" autoplay></video>
+    <button id="capture-button">Capture and Validate photo</button>
+    <div id="result" style="display: none;"></div>
+
+    <script>
+        const videoFeed = document.getElementById('video-feed');
+        const captureButton = document.getElementById('capture-button');
+        const cameraSelector = document.getElementById('camera-selector');
+        const constraints = { video: true };
+    
+        async function setupCameras() {
+            const devices = await navigator.mediaDevices.enumerateDevices();
+            const videoDevices = devices.filter(device => device.kind === 'videoinput');
+            
+            videoDevices.forEach(device => {
+                const option = document.createElement('option');
+                option.value = device.deviceId;
+                option.text = device.label || `Camera ${cameraSelector.options.length + 1}`;
+                cameraSelector.appendChild(option);
+            });
+    
+            if (videoDevices.length > 0) {
+                const selectedCamera = cameraSelector.value || videoDevices[0].deviceId;
+                constraints.video = { deviceId: selectedCamera };
+                const stream = await navigator.mediaDevices.getUserMedia(constraints);
+                videoFeed.srcObject = stream;
+            }
+        }
+    
+        async function startCamera(selectedCamera) {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ video: { deviceId: selectedCamera } });
+                videoFeed.srcObject = stream;
+            } catch (error) {
+                console.error('Error starting camera:', error);
+            }
+        }
+
+        cameraSelector.addEventListener('change', async () => {
+            const selectedCamera = cameraSelector.value;
+            await stopCamera();
+            await startCamera(selectedCamera);
+        });
+
+        async function stopCamera() {
+            if (videoFeed.srcObject) {
+                const tracks = videoFeed.srcObject.getTracks();
+                tracks.forEach(track => track.stop());
+            }
+        }
+    
+        async function sendPhotoToServer(canvas) {
+            try {
+                const dataURL = canvas.toDataURL('image/jpeg');
+                const response = await fetch('/validate_face', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ photo: dataURL })
+                });
+                const result = await response.json();
+                console.log('Result:', result);
+                return result.is_valid_photo;
+            } catch (error) {
+                console.error('Error sending photo:', error);
+                return false;
+            }
+        }
+
+        captureButton.addEventListener('click', async () => {
+            const canvas = document.createElement('canvas');
+            canvas.width = 250;
+            canvas.height = 250;
+            const context = canvas.getContext('2d');
+            context.drawImage(videoFeed, 0, 0, canvas.width, canvas.height);
+
+            const resultDiv = document.getElementById('result');
+            resultDiv.style.display = 'none';
+
+            captureButton.disabled = true;
+            captureButton.textContent = 'Validating...';
+
+            resultDiv.style.display = 'block';
+            resultDiv.innerHTML = `<img class="photo-face" src="${canvas.toDataURL()}" alt="Captured Photo" width="250" height="250">`;
+
+            const isValid = await sendPhotoToServer(canvas);
+
+            captureButton.disabled = false;
+            captureButton.textContent = 'Capture Photo';
+
+            if (isValid !== undefined) {
+                if (isValid) {
+                    resultDiv.innerHTML = `<img class="photo-face photo-face-valid" src="${canvas.toDataURL()}" alt="Captured Photo" width="250" height="250">`;
+                } else {
+                    resultDiv.innerHTML = `<img class="photo-face photo-face-invalid" src="${canvas.toDataURL()}" alt="Captured Photo" width="250" height="250">`;
+                }
+                resultDiv.innerHTML += `</br>`;
+                resultDiv.innerHTML += `</br>`;
+                resultDiv.innerHTML += `<h3>${isValid ? 'VALID FACE!!!' : 'INVALID'}</h3>`;
+            }
+        });
+    
+        setupCameras();
+    </script>
+    
+</body>
+</html>
