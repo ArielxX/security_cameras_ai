@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Object Detection Page</title>
+    <title>Number Plate Recognition Page</title>
     <style>
         body {
             text-align: center;
@@ -54,25 +54,20 @@
     <div class="back-button">
         <a class="btn" href="{{ url_for('index') }}">Home</a>
     </div>
-    <h1>Object Detection Page</h1>
-    <form action="/object_detection" method="post" enctype="multipart/form-data">
+    <h1>Number Plate Recognition Page</h1>
+    <form action="/plate_reader" method="post" enctype="multipart/form-data">
         <input type="file" id="upload-button" name="image" accept="image/*" required>
-        <button id="detect-button" type="submit">Detect Objects</button>
+        <button id="detect-button" type="submit">Read Number Plate</button>
     </form>
     <div id="loading">
-        <p>Detecting objects...</p>
+        <p>Detecting and reading number plate...</p>
     </div>
     {% if detection_result %}
         <h2>Detection Result:</h2>
-        {% if labels|length > 0 %}
-            <h3>Found:</h3>
-            <ul>
-                {% for key, value in labels.items() %}
-                    <li>{{ key }}: {{ value }}</li>
-                {% endfor %}
-            </ul>
+        {% if number_plate %}
+            <h3>{{number_plate}}</h3>
         {% else %}
-            <p>No suspicious objects found.</p>
+            <p>No plate found in this picture.</p>
         {% endif %}
         <img src="{{ detection_result }}" alt="Detection Result">
     {% endif %}

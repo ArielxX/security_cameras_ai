@@ -1,6 +1,7 @@
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request, redirect
 import subprocess
 from face_detect import predict
+from plate_recognition import get_plate_number
 
 app = Flask(__name__)
 
@@ -16,13 +17,21 @@ labels_map = {
 }
 
 def run_detection(weights_path, image_path):
+    print("Running detection")
     command = f"python ../yolov7/detect.py --weights {weights_path} --source {image_path} --class 0 2 3 5 7 --project static --name detected_images --exist-ok --conf-thres 0.5 --iou-thres 0.6 --save-txt"
     subprocess.run(command, shell=True)
+    print("Detection completed")
 
 def run_face_recognition(photo_data):
     print("Running face recognition")
     result = predict(photo_data)
     print("Face recognition result:", result)
+    return result
+
+def run_plate_recognition(image_path):
+    print("Running plate recognition")
+    result = get_plate_number(image_path)
+    print("Plate recognition result:", result)
     return result
 
 
@@ -82,6 +91,33 @@ def object_detection():
             return render_template('object_detection.html', detection_result=detection_result_path, labels=labels)
 
     return render_template('object_detection.html', detection_result=None)
+
+@app.route('/plate_reader', methods=['GET', 'POST'])
+def plate_reader():
+    if request.method == 'POST':
+        if 'image' not in request.files:
+            return redirect(request.url)
+
+        image = request.files['image']
+
+        if image.filename == '':
+            return redirect(request.url)
+
+        if image:
+            image_path = f"static/uploaded_images/{image.filename}"
+            image.save(image_path)
+
+            try:
+                number_plate = run_plate_recognition(image_path)
+                detection_result_path = "static/plate_image_result.jpg"
+            except Exception as e:
+                print("Error:", e)
+                detection_result_path = image_path
+                number_plate = None
+
+            return render_template('plate_reader.html', detection_result=detection_result_path, number_plate=number_plate)
+
+    return render_template('plate_reader.html', detection_result=None)
 
 @app.route('/face_recognition', methods=['GET'])
 def face_recognition():
