@@ -1,7 +1,7 @@
 import cv2
 import numpy as np
 import imutils
-import easyocr
+# import easyocr
 import pytesseract
 
 chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'
@@ -37,10 +37,10 @@ def get_croped_image(img):
     return cropped_image, approx
 
 
-def readtext_version1(cropped_image):
-    reader = easyocr.Reader(['en'])
-    result = reader.readtext(cropped_image)
-    return result[0][-2]
+# def readtext_version1(cropped_image):
+#     reader = easyocr.Reader(['en'])
+#     result = reader.readtext(cropped_image)
+#     return result[0][-2]
 
 
 def readtext_version2(cropped_image):
@@ -132,7 +132,7 @@ def get_plate_number(image_path, function='readtext_version2'):
     res = render_result(img, text, approx)
     
     # save the image
-    cv2.imwrite('plate_image_result.jpg', res)
+    cv2.imwrite('static/plate_image_result.jpg', res)
 
     # plt.imshow(cv2.cvtColor(res, cv2.COLOR_BGR2RGB))
     # plt.show()
