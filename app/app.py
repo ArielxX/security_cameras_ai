@@ -31,7 +31,6 @@ def run_face_recognition(photo_data):
 def run_plate_recognition(image_path):
     print("Running plate recognition")
     result = get_plate_number(image_path)
-    # result = "ABC1234"
     print("Plate recognition result:", result)
     return result
 
